@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=sample_bun
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=rootpassword
+    depends_on:
+      - mysql
+    volumes:
+      - ./:/app
+    entrypoint: ["./entrypoint.sh"]
+  mysql:
+    image: mysql:8.0.34
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
