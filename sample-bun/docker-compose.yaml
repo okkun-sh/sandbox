@@ -15,7 +15,7 @@ services:
       - mysql
     volumes:
       - ./:/app
-    entrypoint: ["./entrypoint.sh"]
+    command: ["./entrypoint.sh"]
   mysql:
     image: mysql:8.0.34
     ports:

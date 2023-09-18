@@ -1,0 +1,4 @@
+- model: User
+  rows:
+    - _id: bar
+      name: Bar
