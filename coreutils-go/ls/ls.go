@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -14,9 +15,30 @@ func main() {
 }
 
 func run() error {
-	filenames, err := list()
+	dir, err := os.Getwd()
 	if err != nil {
 		return err
+	}
+
+	output, err := list(dir)
+	if err != nil {
+		return err
+	}
+
+	fmt.Print(output)
+
+	return nil
+}
+
+func list(dir string) (string, error) {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return "", err
+	}
+
+	filenames := make([]string, len(files))
+	for i, file := range files {
+		filenames[i] = file.Name()
 	}
 
 	maxLen := 0
@@ -26,30 +48,12 @@ func run() error {
 		}
 	}
 
+	output := ""
 	for _, name := range filenames {
 		padding := maxLen + 1 - len(name)
-		fmt.Printf("%s%*s", name, padding, " ")
+		output += fmt.Sprintf("%s%*s", name, padding, " ")
 	}
-	fmt.Println()
+	output = strings.TrimSuffix(output, " ")
 
-	return nil
-}
-
-func list() ([]string, error) {
-	dir, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-
-	files, err := os.ReadDir(dir)
-	if err != nil {
-		return nil, err
-	}
-
-	filenames := make([]string, len(files))
-	for i, file := range files {
-		filenames[i] = file.Name()
-	}
-
-	return filenames, nil
+	return output, nil
 }
