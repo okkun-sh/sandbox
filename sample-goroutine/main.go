@@ -5,18 +5,21 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"os/signal"
+	"syscall"
 	"time"
 )
 
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		time.Sleep(10 * time.Second)
-		fmt.Fprintf(w, "Hello, World!")
+		for i := 1; i <= 5; i++ {
+			fmt.Println(i)
+			time.Sleep(1 * time.Second)
+		}
+		fmt.Println("Hello, World!")
 	})
 
 	server := http.Server{
@@ -24,20 +27,24 @@ func main() {
 		Handler: nil,
 	}
 
-	done := make(chan error)
+	done := make(chan error, 1)
 	go func() {
-		fmt.Println("server start")
 		done <- server.ListenAndServe()
 	}()
 
 	select {
 	case err := <-done:
-		log.Fatal(err)
-		os.Exit(1)
+		fmt.Println("Server failed", err)
+		if err != http.ErrServerClosed {
+			log.Fatalf("HTTP server ListenAndServe: %v", err)
+		}
 	case <-ctx.Done():
-		fmt.Println("server stop")
-		sCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		fmt.Println("Server stopping")
+		c, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
-		server.Shutdown(sCtx)
+		if err := server.Shutdown(c); err != nil {
+			log.Fatalf("HTTP server Shutdown: %v", err)
+		}
+		fmt.Println("Server gracefully stopped")
 	}
 }
