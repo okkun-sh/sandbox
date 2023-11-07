@@ -40,7 +40,7 @@ func main() {
 		}
 	case <-ctx.Done():
 		fmt.Println("Server stopping")
-		c, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		c, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		if err := server.Shutdown(c); err != nil {
 			log.Fatalf("HTTP server Shutdown: %v", err)
