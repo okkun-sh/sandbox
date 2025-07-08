@@ -1,0 +1,42 @@
+name: Test Add-Mask
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-add-mask:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Test basic add-mask
+      run: |
+        LOCAL_SECRET="local_value"
+        echo "before $LOCAL_SECRET"
+        echo "::add-mask::$LOCAL_SECRET"
+        echo "after $LOCAL_SECRET"
+
+    - name: Test different step
+      run: |
+        echo "testing local_value"
+
+    - name: Set global secret as environment variable
+      run: |
+        GLOBAL_SECRET="global_value"
+        echo "::add-mask::$GLOBAL_SECRET"
+        echo "GLOBAL_SECRET=$GLOBAL_SECRET" >> $GITHUB_ENV
+
+    - name: Test global masked value
+      run: |
+        echo "testing $GLOBAL_SECRET"
+
+  test-different-job:
+    runs-on: ubuntu-latest
+    needs: test-add-mask
+
+    steps:
+    - name: Test different job
+      run: |
+        echo "testing local_value"
+        echo "testing global_value"
